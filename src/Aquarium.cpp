@@ -8,6 +8,8 @@ string AquariumCreatureTypeToString(AquariumCreatureType t){
             return "BiggerFish";
         case AquariumCreatureType::NPCreature:
             return "BaseFish";
+        case AquariumCreatureType::PowerUp:
+            return "PowerUp";
         default:
             return "UknownFish";
     }
@@ -48,9 +50,11 @@ void PlayerCreature::draw() const {
     if (this->m_damage_debounce > 0) {
         ofSetColor(ofColor::red); // Flash red if in damage debounce
     }
+
     if (m_sprite) {
         m_sprite->draw(m_x, m_y);
     }
+
     ofSetColor(ofColor::white); // Reset color
 
 }
@@ -131,11 +135,43 @@ void BiggerFish::draw() const {
     this->m_sprite->draw(this->m_x, this->m_y);
 }
 
+// Sprite and hitbox for the Power Up
+PowerUp::PowerUp(float x, float y, int speed, std::shared_ptr<GameSprite> sprite)
+: NPCreature(x, y, speed, sprite) {
+    m_dx = (rand() % 3 - 1);
+    m_dy = (rand() % 3 - 1);
+    normalize();
+    m_creatureType = AquariumCreatureType::PowerUp;
+    m_value = 0; // below the player so it can cosume it without problem
+    
+    setCollisionRadius(30);
+}
+
+void PowerUp::move() {
+    m_x += m_dx * m_speed;
+    m_y += m_dy * m_speed;
+    if(m_dx < 0 ){
+        this->m_sprite->setFlipped(true);
+    }else {
+        this->m_sprite->setFlipped(false);
+    }
+    bounce();
+}
+
+void PowerUp::draw() const {
+    ofLogVerbose() << "NPCreature at (" << m_x << ", " << m_y << ") with speed " << m_speed << std::endl;
+    ofSetColor(ofColor::white);
+    if (m_sprite) {
+        m_sprite->draw(m_x, m_y);
+    }
+}
+
 
 // AquariumSpriteManager
 AquariumSpriteManager::AquariumSpriteManager(){
     this->m_npc_fish = std::make_shared<GameSprite>("base-fish.png", 70,70);
     this->m_big_fish = std::make_shared<GameSprite>("bigger-fish.png", 120, 120);
+    this->m_power_up = std::make_shared<GameSprite>("power-up.png", 60, 60);
 }
 
 std::shared_ptr<GameSprite> AquariumSpriteManager::GetSprite(AquariumCreatureType t){
@@ -145,6 +181,10 @@ std::shared_ptr<GameSprite> AquariumSpriteManager::GetSprite(AquariumCreatureTyp
             
         case AquariumCreatureType::NPCreature:
             return std::make_shared<GameSprite>(*this->m_npc_fish);
+
+        case AquariumCreatureType::PowerUp:
+            return std::make_shared<GameSprite>(*this->m_power_up);
+
         default:
             return nullptr;
     }
@@ -219,6 +259,9 @@ void Aquarium::SpawnCreature(AquariumCreatureType type) {
         case AquariumCreatureType::BiggerFish:
             this->addCreature(std::make_shared<BiggerFish>(x, y, speed, this->m_sprite_manager->GetSprite(AquariumCreatureType::BiggerFish)));
             break;
+        case AquariumCreatureType::PowerUp:
+            this->addCreature(std::make_shared<PowerUp>(x, y, speed, this->m_sprite_manager->GetSprite(AquariumCreatureType::PowerUp)));
+            break;
         default:
             ofLogError() << "Unknown creature type to spawn!";
             break;
@@ -285,6 +328,15 @@ void AquariumGameScene::Update(){
             ofLogVerbose() << "Collision detected between player and NPC!" << std::endl;
             if(event->creatureB != nullptr){
                 event->print();
+
+                auto npc = std::dynamic_pointer_cast<NPCreature>(event->creatureB); // Should help with identifying PowerUp
+                if(npc && npc->GetType() == AquariumCreatureType::PowerUp) {
+                    ofLogNotice() << "Power UP acquired: +3 Power" << std::endl;
+                    const int powerupScore = 3;
+                    this->m_player->increasePower(powerupScore);
+                    m_aquarium->removeCreature(event->creatureB);
+                    return;
+                }
                 if(this->m_player->getPower() < event->creatureB->getValue()){
                     ofLogNotice() << "Player is too weak to eat the creature!" << std::endl;
                     this->m_player->loseLife(3*60); // 3 frames debounce, 3 seconds at 60fps
@@ -298,6 +350,7 @@ void AquariumGameScene::Update(){
                     this->m_player->addToScore(1, event->creatureB->getValue());
                     if (this->m_player->getScore() % 25 == 0){
                         this->m_player->increasePower(1);
+                        this->m_player->setCollisionRadius(this->m_player->getCollisionRadius() * 1.15); // Extra added feature: Increases hitbox by 1.15% corresponding to the size
                         ofLogNotice() << "Player power increased to " << this->m_player->getPower() << "!" << std::endl;
                     }
                     
@@ -348,6 +401,10 @@ void AquariumLevel::ConsumePopulation(AquariumCreatureType creatureType, int pow
             if(node->currentPopulation == 0){
                 return;
             } 
+            if(node->creatureType == AquariumCreatureType::PowerUp) {
+                ofLogVerbose() << "PowerUp consumed." << endl;
+                return; // Should help by preventing it from respawning
+            }
             node->currentPopulation -= 1;
             ofLogVerbose() << "+cosuming from type: " << AquariumCreatureTypeToString(node->creatureType) <<" , currPop: " << node->currentPopulation << endl;
             this->m_level_score += power;
