@@ -9,10 +9,20 @@ void ofApp::setup(){
     backgroundImage.resize(ofGetWindowWidth(), ofGetWindowHeight());
 
     // Loads background music
-    backgroundMusic.load("music/Aqua_Ambience.mp3");
+    backgroundMusic.load("music:sounds/Aqua_Ambience.mp3");
     backgroundMusic.setLoop(true);
     backgroundMusic.play();
 
+    // Loads sound effects
+    // Bite sound effect
+    BiteSoundEffect.load("music:sounds/Bite.mp3");    // Plays when you eat fish
+    BiteSoundEffect.setMultiPlay(true);
+    BiteSoundEffect.setVolume(0.8);
+
+    // Error sound effect
+    ErrorSoundEffect.load("music:sounds/Error.mp3");  // Plays when you collide with stronger fish
+    ErrorSoundEffect.setMultiPlay(true);
+    ErrorSoundEffect.setVolume(0.8);
 
     std::shared_ptr<Aquarium> myAquarium;
     std::shared_ptr<PlayerCreature> player;

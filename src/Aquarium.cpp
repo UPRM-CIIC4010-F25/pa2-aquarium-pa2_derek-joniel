@@ -400,7 +400,7 @@ std::shared_ptr<GameEvent> DetectAquariumCollisions(std::shared_ptr<Aquarium> aq
 
 void AquariumGameScene::Update(){
     std::shared_ptr<GameEvent> event;
-
+    
     this->m_player->update();
 
     if (this->updateControl.tick()) {
@@ -421,6 +421,7 @@ void AquariumGameScene::Update(){
                 if(this->m_player->getPower() < event->creatureB->getValue()){
                     ofLogNotice() << "Player is too weak to eat the creature!" << std::endl;
                     this->m_player->loseLife(3*60); // 3 frames debounce, 3 seconds at 60fps
+                    this->m_player->setDirection(-m_player->getDx(), -m_player->getDy()); // bounces of the stronger fish
                     if(this->m_player->getLives() <= 0){
                         this->m_lastEvent = std::make_shared<GameEvent>(GameEventType::GAME_OVER, this->m_player, nullptr);
                         return;
