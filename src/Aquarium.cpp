@@ -145,7 +145,7 @@ FlashFish::FlashFish(float x, float y, int speed, std::shared_ptr<GameSprite> sp
     normalize();
 
     setCollisionRadius(25);
-    m_value = 3; // Flash Fish have a medium value
+    m_value = 5; // Flash Fish has the same value as Bigger Fish
     m_creatureType = AquariumCreatureType::FlashFish;
 }
 
@@ -180,15 +180,15 @@ PowerfulFish::PowerfulFish(float x, float y, int speed, std::shared_ptr<GameSpri
     normalize();
 
     setCollisionRadius(90);
-      m_value = 8; //Powerful Fish might have a high value
+      m_value = 8; //Powerful Fish might has a high value
     m_creatureType = AquariumCreatureType::PowerfulFish;
 
 
 }
 
 void PowerfulFish::move(){
-    m_x += m_dx * (m_speed * 1.50); //Powerful Fish have a normal movement
-    m_y += m_dy * (m_speed * 1.50);
+    m_x += m_dx * (m_speed * 2.00); //Powerful Fish has a little bit more fast movement
+    m_y += m_dy * (m_speed * 2.00);
     if(m_dx < 0){
         this->m_sprite->setFlipped(true);
     }else{
@@ -537,6 +537,34 @@ std::vector<AquariumCreatureType> Level_2::Repopulate() {
         int delta = node->population - node->currentPopulation;
         if(delta >0){
             for(int i=0; i<delta; i++){
+                toRepopulate.push_back(node->creatureType);
+            }
+            node->currentPopulation += delta;
+        }
+    }
+    return toRepopulate;
+}
+
+std::vector<AquariumCreatureType> Level_3::Repopulate() {
+    std::vector<AquariumCreatureType> toRepopulate;
+    for(std::shared_ptr<AquariumLevelPopulationNode> node : this->m_levelPopulation){
+        int delta = node->population - node->currentPopulation;
+        if(delta > 0){
+            for(int i = 0; i < delta; i++){
+                toRepopulate.push_back(node->creatureType);
+            }
+            node->currentPopulation += delta;
+        }
+    }
+    return toRepopulate;
+}
+
+std::vector<AquariumCreatureType> Level_4::Repopulate() {
+    std::vector<AquariumCreatureType> toRepopulate;
+    for(std::shared_ptr<AquariumLevelPopulationNode> node : this->m_levelPopulation){
+        int delta = node->population - node->currentPopulation;
+        if(delta > 0){
+            for(int i = 0; i < delta; i++){
                 toRepopulate.push_back(node->creatureType);
             }
             node->currentPopulation += delta;
