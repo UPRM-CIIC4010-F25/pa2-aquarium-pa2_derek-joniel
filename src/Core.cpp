@@ -16,25 +16,25 @@ void Creature::bounce() {
     // X bounce
     if(m_x < m_collisionRadius){
         m_x = m_collisionRadius;
-        m_dx = -m_dx;
-
-        m_sprite->setFlipped(false);
+        m_dx = abs(m_dx);
+        m_sprite->setFlipped(false); // bounces right
     }
-    else if(m_x > m_width){
-        m_x = m_width;
-        m_dx = -m_dx;
 
-        m_sprite->setFlipped(true);
+    else if(m_x > m_width - m_collisionRadius){
+        m_x = m_width - m_collisionRadius;
+        m_dx = -abs(m_dx);
+        m_sprite->setFlipped(true); // bounces left
     }
     // Y bounce
     if(m_y < m_collisionRadius){
         m_y = m_collisionRadius;
-        m_dy = -m_dy;
+        m_dy = abs(m_dy); // bounces down
     }
-    else if(m_y > m_height){
-        m_y = m_height;
-        m_dy = -m_dy;
+    else if(m_y > m_height - m_collisionRadius){
+        m_y = m_height - m_collisionRadius;
+        m_dy = -abs(m_dy); // bounces up
     }
+
 }
 
 
@@ -70,28 +70,16 @@ void GameEvent::print() const {
 
 // collision detection between two creatures
 bool checkCollision(std::shared_ptr<Creature> a, std::shared_ptr<Creature> b) {
-    
-    float dx = 0;
-    float dy = 0;
-    float distance = 0;
-
     //diferencias de posiciones entre a y b
-        dx = a->getX() - b->getX();
-        dy = a->getY() - b->getY();
-
-     distance = sqrt(dx * dx + dy * dy);
+    float dx = a->getX() - b->getX();
+    float dy = a->getY() - b->getY();
+    float distance = sqrt(dx * dx + dy * dy);
 
      //revisa si hubo collision
         if(distance < (a->getCollisionRadius() + b->getCollisionRadius())){
-            a->bounce();
-            b->bounce();
-            
             return true;
         }
-
         return false;
-    
-    
 }; 
 
 

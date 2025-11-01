@@ -177,7 +177,7 @@ class AquariumGameScene : public GameScene {
         string GetName()override {return this->m_name;}
         void Update() override;
         void Draw() override;
-    private:
+        private:
         void paintAquariumHUD();
         std::shared_ptr<PlayerCreature> m_player;
         std::shared_ptr<Aquarium> m_aquarium;
