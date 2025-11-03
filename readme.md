@@ -25,7 +25,7 @@ Grading
 | Student Number | Student Name | Student Email |
 |-|-|-|
 | 802-22-0434 | Derek S. Colón Rivera | derek.colon@upr.edu |
-|(STUDENT NUMBER HERE)| (STUDENT NAME HERE)| (STUDENT EMAIL HERE) |
+| 802-22-5403 | Joniel M. Umpierre Jimenez | joniel.umpierre@upr.edu |
 
 ---
 
