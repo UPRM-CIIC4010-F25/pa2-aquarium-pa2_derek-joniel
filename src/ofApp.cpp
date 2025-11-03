@@ -9,9 +9,19 @@ void ofApp::setup(){
     backgroundImage.resize(ofGetWindowWidth(), ofGetWindowHeight());
 
     // Loads background music
-    backgroundMusic.load("music/Aqua_Ambience.mp3");
+    backgroundMusic.load("sfx/Aqua_Ambience.mp3");
     backgroundMusic.setLoop(true);
     backgroundMusic.play();
+
+    // Loads bite sound
+    biteSoundEffect.load("sfx/Bite.mp3");
+    biteSoundEffect.setMultiPlay(true); // allows it to play multiple times at a time without interruption
+    biteSoundEffect.setVolume(0.4);
+    
+
+    // Load error sound
+    errorSoundEffect.load("sfx/Error.mp3");
+    errorSoundEffect.setVolume(1.5);
 
     std::shared_ptr<Aquarium> myAquarium;
     std::shared_ptr<PlayerCreature> player;
@@ -45,7 +55,7 @@ void ofApp::setup(){
 
     // now that we are mostly set, lets pass the player and the aquarium downstream
     gameManager->AddScene(std::make_shared<AquariumGameScene>(
-        std::move(player), std::move(myAquarium), GameSceneKindToString(GameSceneKind::AQUARIUM_GAME)
+        std::move(player), std::move(myAquarium), GameSceneKindToString(GameSceneKind::AQUARIUM_GAME), biteSoundEffect, errorSoundEffect
     )); // player and aquarium are owned by the scene moving forward
 
     // Load font for game over message

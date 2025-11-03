@@ -38,6 +38,8 @@ class ofApp : public ofBaseApp{
 
 		ofImage backgroundImage;
 		ofSoundPlayer backgroundMusic; // background music
+		ofSoundPlayer biteSoundEffect; // bite sound
+		ofSoundPlayer errorSoundEffect; // error sound
 
 		std::unique_ptr<GameSceneManager> gameManager;
 		std::shared_ptr<AquariumSpriteManager>spriteManager;

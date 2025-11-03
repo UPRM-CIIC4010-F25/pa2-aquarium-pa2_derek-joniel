@@ -7,6 +7,8 @@
 #include "Core.h"
 
 
+class ofSoundPlayer;
+
 enum class AquariumCreatureType {
     NPCreature,
     BiggerFish,
@@ -168,8 +170,8 @@ std::shared_ptr<GameEvent> DetectAquariumCollisions(std::shared_ptr<Aquarium> aq
 
 class AquariumGameScene : public GameScene {
     public:
-        AquariumGameScene(std::shared_ptr<PlayerCreature> player, std::shared_ptr<Aquarium> aquarium, string name)
-        : m_player(std::move(player)) , m_aquarium(std::move(aquarium)), m_name(name){}
+        AquariumGameScene(std::shared_ptr<PlayerCreature> player, std::shared_ptr<Aquarium> aquarium, string name, ofSoundPlayer& biteSoundEffect, ofSoundPlayer& errorSoundEffect)
+        :m_biteSound(biteSoundEffect), m_errorSound(errorSoundEffect), m_player(std::move(player)) , m_aquarium(std::move(aquarium)), m_name(name){} // added sfx to the constructor
         std::shared_ptr<GameEvent> GetLastEvent(){return m_lastEvent;}
         void SetLastEvent(std::shared_ptr<GameEvent> event){this->m_lastEvent = event;}
         std::shared_ptr<PlayerCreature> GetPlayer(){return this->m_player;}
@@ -178,6 +180,8 @@ class AquariumGameScene : public GameScene {
         void Update() override;
         void Draw() override;
         private:
+        ofSoundPlayer& m_biteSound;   // bite sound
+        ofSoundPlayer& m_errorSound;  // error sound
         void paintAquariumHUD();
         std::shared_ptr<PlayerCreature> m_player;
         std::shared_ptr<Aquarium> m_aquarium;

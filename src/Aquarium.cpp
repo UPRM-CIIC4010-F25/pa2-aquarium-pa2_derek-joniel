@@ -420,6 +420,7 @@ void AquariumGameScene::Update(){
                 }
                 if(this->m_player->getPower() < event->creatureB->getValue()){
                     ofLogNotice() << "Player is too weak to eat the creature!" << std::endl;
+                    m_errorSound.play(); // plays error sound
                     this->m_player->loseLife(3*60); // 3 frames debounce, 3 seconds at 60fps
                     this->m_player->setDirection(-m_player->getDx(), -m_player->getDy()); // bounces of the stronger fish
                     if(this->m_player->getLives() <= 0){
@@ -428,6 +429,7 @@ void AquariumGameScene::Update(){
                     }
                 }
                 else{
+                    m_biteSound.play(); // plays bite sound
                     this->m_aquarium->removeCreature(event->creatureB);
                     this->m_player->addToScore(1, event->creatureB->getValue());
                     if (this->m_player->getScore() % 25 == 0){
