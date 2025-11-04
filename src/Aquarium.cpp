@@ -14,6 +14,8 @@ string AquariumCreatureTypeToString(AquariumCreatureType t){
             return "PowerfulFish";
         case AquariumCreatureType::PowerUp:
             return "PowerUp";
+        case AquariumCreatureType::LifeUp:
+            return "LifeUp";
         default:
             return "UknownFish";
     }
@@ -33,6 +35,7 @@ void PlayerCreature::setDirection(float dx, float dy) {
 void PlayerCreature::move() {
     m_x += m_dx * m_speed;
     m_y += m_dy * m_speed;
+
     this->bounce();
 }
 
@@ -145,7 +148,7 @@ FlashFish::FlashFish(float x, float y, int speed, std::shared_ptr<GameSprite> sp
     normalize();
 
     setCollisionRadius(25);
-    m_value = 5; // Flash Fish has the same value as Bigger Fish
+    m_value = 3; // Flash Fish has the same value as Bigger Fish
     m_creatureType = AquariumCreatureType::FlashFish;
 }
 
@@ -180,7 +183,7 @@ PowerfulFish::PowerfulFish(float x, float y, int speed, std::shared_ptr<GameSpri
     normalize();
 
     setCollisionRadius(90);
-      m_value = 8; //Powerful Fish might has a high value
+      m_value = 10; //Powerful Fish might has a high value
     m_creatureType = AquariumCreatureType::PowerfulFish;
 
 
@@ -217,15 +220,35 @@ PowerUp::PowerUp(float x, float y, int speed, std::shared_ptr<GameSprite> sprite
 void PowerUp::move() {
     m_x += m_dx * m_speed;
     m_y += m_dy * m_speed;
-    if(m_dx < 0 ){
-        this->m_sprite->setFlipped(true);
-    }else {
-        this->m_sprite->setFlipped(false);
-    }
     bounce();
 }
 
 void PowerUp::draw() const {
+    ofLogVerbose() << "NPCreature at (" << m_x << ", " << m_y << ") with speed " << m_speed << std::endl;
+    ofSetColor(ofColor::white);
+    if (m_sprite) {
+        m_sprite->draw(m_x, m_y);
+    }
+}
+
+LifeUp::LifeUp(float x, float y, int speed, std::shared_ptr<GameSprite> sprite)
+: NPCreature(x, y, speed, sprite) {
+    m_dx = (rand() % 3 - 1);
+    m_dy = (rand() % 3 - 1);
+    normalize();
+    m_creatureType = AquariumCreatureType::LifeUp;
+    m_value = 0; // below the player so it can cosume it without problem
+    
+    setCollisionRadius(30);
+}
+
+void LifeUp::move() {
+    m_x += m_dx * m_speed;
+    m_y += m_dy * m_speed;
+    bounce();
+}
+
+void LifeUp::draw() const {
     ofLogVerbose() << "NPCreature at (" << m_x << ", " << m_y << ") with speed " << m_speed << std::endl;
     ofSetColor(ofColor::white);
     if (m_sprite) {
@@ -241,6 +264,12 @@ AquariumSpriteManager::AquariumSpriteManager(){
     this->m_flash_fish = std::make_shared<GameSprite>("flash-fish.png", 50, 50);
     this->m_powerful_fish = std::make_shared<GameSprite>("powerful-fish.png", 180, 180);
     this->m_power_up = std::make_shared<GameSprite>("power-up.png", 60, 60);
+    this->m_life_up = std::make_shared<GameSprite>("life-up.png", 40, 40);
+}
+
+std::shared_ptr<GameSprite> Aquarium::GetNewPlayerSprite(AquariumCreatureType t) {
+    if(!m_sprite_manager) return nullptr;
+    return this->m_sprite_manager->GetSprite(t);
 }
 
 std::shared_ptr<GameSprite> AquariumSpriteManager::GetSprite(AquariumCreatureType t){
@@ -259,6 +288,9 @@ std::shared_ptr<GameSprite> AquariumSpriteManager::GetSprite(AquariumCreatureTyp
 
         case AquariumCreatureType::PowerUp:
             return std::make_shared<GameSprite>(*this->m_power_up);
+
+        case AquariumCreatureType::LifeUp:
+            return std::make_shared<GameSprite>(*this->m_life_up);
 
         default:
             return nullptr;
@@ -343,6 +375,9 @@ void Aquarium::SpawnCreature(AquariumCreatureType type) {
         case AquariumCreatureType::PowerUp:
             this->addCreature(std::make_shared<PowerUp>(x, y, speed, this->m_sprite_manager->GetSprite(AquariumCreatureType::PowerUp)));
             break;
+        case AquariumCreatureType::LifeUp:
+            this->addCreature(std::make_shared<LifeUp>(x, y, speed, this->m_sprite_manager->GetSprite(AquariumCreatureType::LifeUp)));
+            break;
         default:
             ofLogError() << "Unknown creature type to spawn!";
             break;
@@ -396,8 +431,48 @@ std::shared_ptr<GameEvent> DetectAquariumCollisions(std::shared_ptr<Aquarium> aq
     return nullptr;
 };
 
-//  Imlementation of the AquariumScene
+void AquariumGameScene::UpdatePlayerSprite() {
+    // Feature that alllows player's fish sprite to change corresponding to the amount of power
 
+    int powerLvl = this->m_player->getPower();
+    AquariumCreatureType fish;
+    if(powerLvl < 3) {
+        fish = AquariumCreatureType::NPCreature;
+    }
+    else if(powerLvl >= 3 && powerLvl < 5) {
+        fish = AquariumCreatureType::FlashFish;
+    }
+    else if(powerLvl >= 5 && powerLvl < 10) {
+        fish = AquariumCreatureType::BiggerFish;
+    }
+    else {
+        fish = AquariumCreatureType::PowerfulFish;
+    }
+
+    float hitboxRadius = 34.5; // base player radius (30.0 * 1.15)
+    switch(fish) {
+        case AquariumCreatureType::NPCreature:
+        hitboxRadius = 34.5; // 30 * 15
+        break;
+        case AquariumCreatureType::FlashFish:
+        hitboxRadius = 28.75; // 25 * 15
+        break;
+        case AquariumCreatureType::BiggerFish:
+        hitboxRadius = 60; // default
+        break;
+        case AquariumCreatureType::PowerfulFish:
+        hitboxRadius = 90; // default
+        break;
+        default:
+        hitboxRadius = 34.5;
+        break;
+    }
+    this->m_player->setCollisionRadius(hitboxRadius);
+    auto sprite = this->m_aquarium->GetNewPlayerSprite(fish);
+    if(sprite) this->m_player->setSprite(sprite);
+}
+
+//  Imlementation of the AquariumScene
 void AquariumGameScene::Update(){
     std::shared_ptr<GameEvent> event;
     
@@ -415,6 +490,14 @@ void AquariumGameScene::Update(){
                     ofLogNotice() << "Power UP acquired: +3 Power" << std::endl;
                     const int powerupScore = 3;
                     this->m_player->increasePower(powerupScore);
+                    this->UpdatePlayerSprite();
+                    m_aquarium->removeCreature(event->creatureB);
+                    return;
+                }
+                if(npc && npc->GetType() == AquariumCreatureType::LifeUp) {
+                    ofLogNotice() << "+1 Live Gained!" << std::endl;
+                    const int lifeupLives = 1;
+                    this->m_player->increasesLife(lifeupLives);
                     m_aquarium->removeCreature(event->creatureB);
                     return;
                 }
@@ -434,7 +517,8 @@ void AquariumGameScene::Update(){
                     this->m_player->addToScore(1, event->creatureB->getValue());
                     if (this->m_player->getScore() % 25 == 0){
                         this->m_player->increasePower(1);
-                        this->m_player->setCollisionRadius(this->m_player->getCollisionRadius() * 1.15); // Extra added feature: Increases hitbox by 1.15% corresponding to the size
+                        this->UpdatePlayerSprite();
+                        // this->m_player->setCollisionRadius(this->m_player->getCollisionRadius() * 1.15); // Extra added feature: Increases hitbox by 1.15% corresponding to the size
                         ofLogNotice() << "Player power increased to " << this->m_player->getPower() << "!" << std::endl;
                     }
                     
@@ -487,6 +571,10 @@ void AquariumLevel::ConsumePopulation(AquariumCreatureType creatureType, int pow
             } 
             if(node->creatureType == AquariumCreatureType::PowerUp) {
                 ofLogVerbose() << "PowerUp consumed." << endl;
+                return; // Should help by preventing it from respawning
+            }
+            if(node->creatureType == AquariumCreatureType::LifeUp) {
+                ofLogVerbose() << "LifeUp consumed." << endl;
                 return; // Should help by preventing it from respawning
             }
             node->currentPopulation -= 1;
