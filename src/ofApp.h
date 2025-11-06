@@ -25,6 +25,9 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo) override;
 		void gotMessage(ofMessage msg) override;
 	
+		// BONUS
+		void ApplyTheme(int i);
+		int currentTheme = 0; // default
 		
 		char moveDirection;
 		int DEFAULT_SPEED = 5;
@@ -36,10 +39,17 @@ class ofApp : public ofBaseApp{
 		GameEvent lastEvent;
 
 
-		ofImage backgroundImage;
-		ofSoundPlayer backgroundMusic; // background music
 		ofSoundPlayer biteSoundEffect; // bite sound
 		ofSoundPlayer errorSoundEffect; // error sound
+
+		ofImage backgroundImage; // default bg
+		ofImage background2Image;
+		ofImage background3Image;
+		ofImage background4Image;
+		ofSoundPlayer backgroundMusic; // default music
+		ofSoundPlayer background2Music;
+		ofSoundPlayer background3Music;
+		ofSoundPlayer background4Music;
 
 		std::unique_ptr<GameSceneManager> gameManager;
 		std::shared_ptr<AquariumSpriteManager>spriteManager;

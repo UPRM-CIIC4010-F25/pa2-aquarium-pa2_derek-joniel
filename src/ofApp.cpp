@@ -8,20 +8,42 @@ void ofApp::setup(){
     backgroundImage.load("background.png");
     backgroundImage.resize(ofGetWindowWidth(), ofGetWindowHeight());
 
+    // Musics / Sounds
     // Loads background music
     backgroundMusic.load("sfx/Aqua_Ambience.mp3");
     backgroundMusic.setLoop(true);
     backgroundMusic.play();
 
+    // BONUS - Themes
+    background2Image.load("background2.png");
+    background2Image.resize(ofGetWindowWidth(), ofGetWindowHeight());
+
+    background3Image.load("background3.png");
+    background3Image.resize(ofGetWindowWidth(), ofGetWindowHeight());
+
+    background4Image.load("background4.png");
+    background4Image.resize(ofGetWindowWidth(), ofGetWindowHeight());
+
+    background2Music.load("sfx/Green_Ambience.mp3");
+    background2Music.setLoop(true);
+    background2Music.setVolume(0.3); // pretty loud
+
+    background3Music.load("sfx/Crafty_Ambience.mp3");
+    background3Music.setLoop(true);
+
+    background4Music.load("sfx/Coral_Ambience.mp3");
+    background4Music.setLoop(true);
+    background4Music.setVolume(0.5);
+
     // Loads bite sound
     biteSoundEffect.load("sfx/Bite.mp3");
-    biteSoundEffect.setMultiPlay(true); // allows it to play multiple times at a time without interruption
+    biteSoundEffect.setMultiPlay(true); // allows it to play multiple times without interruption
     biteSoundEffect.setVolume(0.4);
-    
 
     // Load error sound
     errorSoundEffect.load("sfx/Error.mp3");
     errorSoundEffect.setVolume(1.5);
+
 
     std::shared_ptr<Aquarium> myAquarium;
     std::shared_ptr<PlayerCreature> player;
@@ -49,8 +71,9 @@ void ofApp::setup(){
     myAquarium->addAquariumLevel(std::make_shared<Level_0>(0, 10));
     myAquarium->addAquariumLevel(std::make_shared<Level_1>(1, 15));
     myAquarium->addAquariumLevel(std::make_shared<Level_2>(2, 20));
-    myAquarium->addAquariumLevel(std::make_shared<Level_3>(3, 75)); //level 3 added
+    myAquarium->addAquariumLevel(std::make_shared<Level_3>(3, 75));  //level 3 added
     myAquarium->addAquariumLevel(std::make_shared<Level_4>(4, 150)); //level 4 added
+
     myAquarium->Repopulate(); // initial population
 
     // now that we are mostly set, lets pass the player and the aquarium downstream
@@ -88,6 +111,9 @@ void ofApp::update(){
         
     }
 
+    // BONUS
+
+
     gameManager->UpdateActiveScene();
     
 
@@ -96,10 +122,56 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    backgroundImage.draw(0, 0);
+    switch(currentTheme) {
+        case 0: // aquatic(default) theme
+            backgroundImage.draw(0,0);
+            break;
+        case 1: // frutiger theme
+            background2Image.draw(0,0);
+            break;
+        case 2: // minecraft theme
+            background3Image.draw(0,0);
+            break;
+        case 3: // tropical theme
+            background4Image.draw(0,0);
+            break;
+        default:
+            backgroundImage.draw(0,0);
+            break;
+    }
     gameManager->DrawActiveScene();
 }
 
+//--------------------------------------------------------------
+void ofApp::ApplyTheme(int i) {
+    if(i < 0) i = 0;
+    if(i > 3) i = 3;
+    currentTheme = i;
+
+    if(backgroundMusic.isPlaying()) backgroundMusic.stop();
+    if(background2Music.isPlaying()) background2Music.stop();
+    if(background3Music.isPlaying()) background3Music.stop();
+    if(background4Music.isPlaying()) background4Music.stop();
+
+    switch(currentTheme) {
+        case 0: // aquatic(default) theme
+            backgroundMusic.play();
+            break;
+        case 1: // frutiger theme
+            background2Music.play();
+            break;
+        case 2: // minecraft theme
+            background3Music.play();
+            break;
+        case 3: // tropical theme
+            background4Music.play();
+            break;
+        default:
+            backgroundMusic.play();
+            break;
+    }
+
+}
 //--------------------------------------------------------------
 void ofApp::exit(){
     
@@ -131,6 +203,12 @@ void ofApp::keyPressed(int key){
             default:
                 break;
         }
+
+    // BONUS
+    if(key >= '1' && key <= '4') {
+        ApplyTheme(key - '1');
+        return; // allows you to press from 1 to 4 for the themes
+    }
     
         
     
@@ -213,6 +291,9 @@ void ofApp::mouseExited(int x, int y){
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
     backgroundImage.resize(w, h);
+    background2Image.resize(w, h);
+    background3Image.resize(w, h);
+    background4Image.resize(w, h);
     auto aquariumScene = std::static_pointer_cast<AquariumGameScene>(gameManager->GetScene(GameSceneKindToString(GameSceneKind::AQUARIUM_GAME)));
     aquariumScene->GetAquarium()->setBounds(w,h);
     aquariumScene->GetPlayer()->setBounds(w - 20, h - 20);

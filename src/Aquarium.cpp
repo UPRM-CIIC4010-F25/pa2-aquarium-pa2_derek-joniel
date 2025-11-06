@@ -59,7 +59,7 @@ void PlayerCreature::draw() const {
     }
 
     if (m_sprite) {
-        m_sprite->draw(m_x, m_y);
+        m_sprite->draw(this->m_x - m_collisionRadius, this->m_y - m_collisionRadius);
     }
 
     ofSetColor(ofColor::white); // Reset color
@@ -108,7 +108,7 @@ void NPCreature::draw() const {
     ofLogVerbose() << "NPCreature at (" << m_x << ", " << m_y << ") with speed " << m_speed << std::endl;
     ofSetColor(ofColor::white);
     if (m_sprite) {
-        m_sprite->draw(m_x, m_y);
+        m_sprite->draw(this->m_x - m_collisionRadius, this->m_y - m_collisionRadius);
     }
 }
 
@@ -139,7 +139,7 @@ void BiggerFish::move() {
 
 void BiggerFish::draw() const {
     ofLogVerbose() << "BiggerFish at (" << m_x << ", " << m_y << ") with speed " << m_speed << std::endl;
-    this->m_sprite->draw(this->m_x, this->m_y);
+    this->m_sprite->draw(this->m_x - m_collisionRadius, this->m_y - m_collisionRadius);
 }
 // Flash Fish Implementation
 FlashFish::FlashFish(float x, float y, int speed, std::shared_ptr<GameSprite> sprite) : NPCreature(x, y, speed, sprite){
@@ -168,7 +168,7 @@ void FlashFish::move() {
 
 void FlashFish::draw() const {
     ofLogVerbose() << "FlashFish at ("<< m_x << ", " << m_y <<") with speed" << m_speed << std::endl;
-    this->m_sprite->draw(this->m_x, this->m_y);
+    this->m_sprite->draw(this->m_x - m_collisionRadius, this->m_y - m_collisionRadius);
 }
 //Powerful Fish implementation
 PowerfulFish::PowerfulFish(float x, float y, int speed, std::shared_ptr<GameSprite> sprite) : NPCreature(x, y, speed, sprite){
@@ -203,7 +203,7 @@ void PowerfulFish::move(){
 
 void PowerfulFish::draw() const {
     ofLogVerbose() << "PowerfulFish at ("<< m_x <<" , " <<") with speed" << m_speed << std::endl;
-    this->m_sprite->draw(this->m_x, this->m_y);
+    this->m_sprite->draw(this->m_x - m_collisionRadius, this->m_y - m_collisionRadius);
 }
 // Sprite and hitbox for the Power Up
 PowerUp::PowerUp(float x, float y, int speed, std::shared_ptr<GameSprite> sprite)
@@ -227,7 +227,7 @@ void PowerUp::draw() const {
     ofLogVerbose() << "NPCreature at (" << m_x << ", " << m_y << ") with speed " << m_speed << std::endl;
     ofSetColor(ofColor::white);
     if (m_sprite) {
-        m_sprite->draw(m_x, m_y);
+        m_sprite->draw(this->m_x - m_collisionRadius, this->m_y - m_collisionRadius);
     }
 }
 
@@ -252,7 +252,7 @@ void LifeUp::draw() const {
     ofLogVerbose() << "NPCreature at (" << m_x << ", " << m_y << ") with speed " << m_speed << std::endl;
     ofSetColor(ofColor::white);
     if (m_sprite) {
-        m_sprite->draw(m_x, m_y);
+        m_sprite->draw(this->m_x - m_collisionRadius, this->m_y - m_collisionRadius);
     }
 }
 
@@ -291,7 +291,6 @@ std::shared_ptr<GameSprite> AquariumSpriteManager::GetSprite(AquariumCreatureTyp
 
         case AquariumCreatureType::LifeUp:
             return std::make_shared<GameSprite>(*this->m_life_up);
-
         default:
             return nullptr;
     }
@@ -431,6 +430,7 @@ std::shared_ptr<GameEvent> DetectAquariumCollisions(std::shared_ptr<Aquarium> aq
     return nullptr;
 };
 
+// BONUS
 void AquariumGameScene::UpdatePlayerSprite() {
     // Feature that alllows player's fish sprite to change corresponding to the amount of power
 
@@ -461,7 +461,7 @@ void AquariumGameScene::UpdatePlayerSprite() {
         hitboxRadius = 60; // default
         break;
         case AquariumCreatureType::PowerfulFish:
-        hitboxRadius = 90; // default
+        hitboxRadius = 80; // default
         break;
         default:
         hitboxRadius = 34.5;
@@ -501,6 +501,7 @@ void AquariumGameScene::Update(){
                     m_aquarium->removeCreature(event->creatureB);
                     return;
                 }
+
                 if(this->m_player->getPower() < event->creatureB->getValue()){
                     ofLogNotice() << "Player is too weak to eat the creature!" << std::endl;
                     m_errorSound.play(); // plays error sound
@@ -521,9 +522,7 @@ void AquariumGameScene::Update(){
                         // this->m_player->setCollisionRadius(this->m_player->getCollisionRadius() * 1.15); // Extra added feature: Increases hitbox by 1.15% corresponding to the size
                         ofLogNotice() << "Player power increased to " << this->m_player->getPower() << "!" << std::endl;
                     }
-                    
                 }
-                
                 
 
             } else {
@@ -577,6 +576,7 @@ void AquariumLevel::ConsumePopulation(AquariumCreatureType creatureType, int pow
                 ofLogVerbose() << "LifeUp consumed." << endl;
                 return; // Should help by preventing it from respawning
             }
+
             node->currentPopulation -= 1;
             ofLogVerbose() << "+cosuming from type: " << AquariumCreatureTypeToString(node->creatureType) <<" , currPop: " << node->currentPopulation << endl;
             this->m_level_score += power;

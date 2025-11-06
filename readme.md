@@ -37,3 +37,13 @@ If a partner has no commits in the repositories, they will receive a 0.
 
 # Student Notes
 If you have any bonus specs, bonus or any details the TA's should know, you should include it here:
+
+Added Bonuses and extra changes to the project:
+
+Bonus 1 - Themes: Pressing the keys between 1 and 4 allows you to change the background to different images and music as well.
+
+Bonus 2 - Sprite change: We made it so that the player's fish sprite changes to the "next" available fish to eat. This feature indicates to the player that they've upgraded and are able to eat the same fish as the sprite.
+
+Bonus 3 - SFX: Added sound effects to when you eat the fishes and also when you bounce off them when you're too weak to eat them.
+
+Bonus 4 - "PowerUp" Power Up (weird name): When you reach the last level (level 4), an extra power up aside from the life one will spawn in the form of "fish flakes". Eating the power up will up your power by 3 and give you and even greater chance of eating bigger and better fish.
